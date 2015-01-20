@@ -1,11 +1,21 @@
-this is a port of famous AS3 library swiftsuspenders.
+this is a lighweight port of famous AS3 library swiftsuspenders 2.
+NB. `js-suspenders-101-porting.zip` file contains the first version I ported.
 
-Although it basically works, at the moment this is just a "porting exercise".
-Only constructor injection point is implemented. Code that I could not port is just commented.
+I mean... i just wrote as a monkey copying from AS3 to JS.
+
+
+Although it basically works, at the moment this is just a "porting exercise".(I commented pieces of code I wasn't able to rewrite)
+Not every features are implemented:
+* constructor injection point.
+* Class, Singleton and Value providers.
+* NO children injector.
+
+Why? because at first I'd like to understand what i wrote :)
+
 
 ##Defining functions to map
 
-It supports mapping by Array, as angularjs-style `["Dep", "SecondDep", Sprite]`
+It supports mapping by Array `["Dep", "SecondDep", Sprite]`
 
 ```javascript
 // Sprite.js
