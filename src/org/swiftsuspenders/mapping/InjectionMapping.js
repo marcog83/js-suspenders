@@ -13,7 +13,7 @@ define(function (require) {
 		this._mappingId = mappingId;
 		this._defaultProviderSet = true;
 		//
-		this.mapProvider(new ClassProvider(type));
+		this._mapProvider(new ClassProvider(type));
 	}
 
 	InjectionMapping.prototype = {
@@ -38,7 +38,7 @@ define(function (require) {
 				'avoid seeing this message.');
 			}
 			this._defaultProviderSet = false;
-			this.mapProvider(provider);
+			this._mapProvider(provider);
 			return this;
 		},
 		hasProvider: function () {
@@ -48,7 +48,7 @@ define(function (require) {
 			return this.injector.providerMappings[this._mappingId];
 		},
 		//----------------------         Private / Protected Methods        ----------------------//
-		mapProvider: function (provider) {
+		_mapProvider: function (provider) {
 			this.injector.providerMappings[this._mappingId] = provider;
 		}
 	};
