@@ -56,10 +56,10 @@ var injector = new Injector();
 
 You can map in some different ways
 
-directly with its name (minification can breaks funcion names!!!)
+directly with function name (minification can breaks funcion names!!!)
 
 ```javascript
-injector.map(Dep).asSingleton(); // asSingleton() allow you to register a function as a Singleton. Only 1 instance will be created.
+injector.map(Dep).asSingleton(); // asSingleton() allow you to map a function as a Singleton.
 ```
 
 map a function directly with its name, providing a name (string will not break, but dependencies still can)
