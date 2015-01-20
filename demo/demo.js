@@ -1,4 +1,8 @@
-require(["../src/org/swiftsuspenders/Injector", "./Sprite", "./SpriteNoArray"], function (Injector, Sprite, SpriteNoArray) {
+require([
+    "../src/js-suspenders/Injector",
+    "./Sprite",
+    "./SpriteNoArray"
+], function (Injector, Sprite, SpriteNoArray) {
 
     function Dep() {
         console.log("initialize");
