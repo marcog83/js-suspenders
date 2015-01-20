@@ -26,6 +26,24 @@ define(function (require, exports, module) {
             };
             memoized.cache = {};
             return memoized;
+        },
+        functionName: function (fun) {
+            var ret = fun.toString();
+            ret = ret.substr('function '.length);
+            ret = ret.substr(0, ret.indexOf('('));
+            return ret.trim();
+        },
+        getQualifiedClassName: function (type) {
+            if (utils.isString(type))return type;
+            if (utils.isFunction(type))return type.name || utils.functionName(type);
+            if (utils.isArray(type)) {
+                type = type[type.length - 1];
+                return type.name || utils.functionName(type);
+            }
+            return type;
+        },
+        getId: function (type, name) {
+            return name || utils.getQualifiedClassName(type);
         }
     };
 

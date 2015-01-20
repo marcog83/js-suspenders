@@ -5,11 +5,7 @@ define(function (require) {
     var utils = require("./utils");
     var InjectionMapping = require("./mapping/InjectionMapping");
     var Reflector = require("./reflection/Reflector");
-    var getQualifiedClassName = require("../../core/getQualifiedClassName");
 
-    function getId(type, name) {
-        return name || getQualifiedClassName(type);
-    }
 
     function Injector() {
         this._mappings = {};
@@ -28,32 +24,27 @@ define(function (require) {
             //get id
             // cerca in cache
             // o crea un nuovo mapping
-            var mappingId = getId(type, name);
+            var mappingId = utils.getId(type, name);
             return this._mappings[mappingId] || this.createMapping(type, name, mappingId);
         },
         unmap: function (type, name) {
-            var mappingId = getId(type, name);
+            var mappingId = utils.getId(type, name);
             var mapping = this._mappings[mappingId];
-            if (mapping && mapping.isSealed) {
-                throw new Error('Can\'t unmap a sealed mapping');
-            }
-            if (!mapping) {
-                throw new Error('Error while removing an injector mapping: ' +
-                'No mapping defined for dependency ' + mappingId);
-            }
-            mapping.getProvider().destroy();
+
+            mapping && mapping.getProvider().destroy();
             delete this._mappings[mappingId];
             delete this.providerMappings[mappingId];
+            delete this._descriptionsCache[type];
         },
         satisfies: function (type, name) {
-            var mappingId = getId(type, name);
+            var mappingId = utils.getId(type, name);
             return this.getProvider(mappingId, true) != null;
         },
         satisfiesDirectly: function (type, name) {
             return this.hasDirectMapping(type, name);
         },
         getMapping: function (type, name) {
-            var mappingId = getId(type, name);
+            var mappingId = utils.getId(type, name);
             var mapping = this._mappings[mappingId];
             if (!mapping) {
                 throw new Error('Error while retrieving an injector mapping: '
@@ -65,7 +56,7 @@ define(function (require) {
             return this._managedObjects[instance];
         },
         getInstance: function (type, name, targetType) {
-            var mappingId = getId(type, name);
+            var mappingId = utils.getId(type, name);
             var provider = this.getProvider(mappingId);
             if (provider) {
                 return provider.apply(targetType, this);
@@ -74,7 +65,7 @@ define(function (require) {
         },
         instantiateUnmapped: function (type) {
             if (!this.canBeInstantiated(type)) {
-                throw new Error("Can't instantiate interface " + getQualifiedClassName(type));
+                throw new Error("Can't instantiate interface " + type.toString());
             }
             var description = this.getDescription(type);
             //
@@ -102,7 +93,7 @@ define(function (require) {
             this._descriptionsCache = {};
         },
         hasDirectMapping: function (type, name) {
-            return this._mappings[getId(type, name)] != null;
+            return this._mappings[utils.getId(type, name)] != null;
 
         },
         canBeInstantiated: function (type) {
