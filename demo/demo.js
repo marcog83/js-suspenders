@@ -2,22 +2,23 @@ require({
     paths: {
         lodash: "./lodash"
     }
-}, ["../src/org/swiftsuspenders/Injector", "./Sprite", "./Loader", "./SpriteNoArray"], function (Injector, Sprite, Loader, SpriteNoArray) {
+}, ["../src/org/swiftsuspenders/Injector", "./Sprite",  "./SpriteNoArray"], function (Injector, Sprite, SpriteNoArray) {
 
     function Dep() {
         console.log("initialize");
     }
 
 
-    function ThirdType() {
+    function ThirdType(value) {
         console.log("ThirdType");
+        this.value=value;
     }
 
 
     var injector = new Injector();
-    var loader = new Loader(injector);
+
     injector.map(Dep).asSingleton();
-    injector.map(["Dep", "SecondDep", Sprite]);
+    injector.map(["Dep", "SecondDep", Sprite],'Sprite');
     injector.map(SpriteNoArray,'SpriteNoArray');
 
     injector.map('Value').toValue({
@@ -27,11 +28,11 @@ require({
     });
 
     injector.map('SecondDep').toType(ThirdType);
-    //injector.map(SecondDep).toType(ThirdType);
 
-    //var sprite = injector.getInstance(["Dep", "SecondDep", Sprite]);
-    var sprite = loader.load();//injector.getInstance(Sprite);
+
+    var sprite = injector.getInstance('Sprite');
     var sprite2 = injector.getInstance(SpriteNoArray);
+
     var d = injector.getInstance(Dep);
     var secondDep = injector.getInstance('SecondDep');
     var toValue = injector.getInstance('Value');

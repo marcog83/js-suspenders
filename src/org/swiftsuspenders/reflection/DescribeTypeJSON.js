@@ -15,7 +15,7 @@ define(function (require, exports, module) {
         var text = target.toString();
         var argNames = text.match(FN_ARGS)[1].split(',');
         return _.compact(argNames).map(function (parameter) {
-            return capitalize(parameter).trim()
+            return capitalize(parameter.trim());
         })
     }
 

@@ -1,17 +1,17 @@
 define(function (require, exports, module) {
     'use strict';
-    function e(dep, ISecondDep) {
+    function SpriteNoArray(dep, secondDep) {
         this.element = 1;
         this.method = function () {
         };
         this.dep = dep;
-        this.secondDep = ISecondDep;
+        this.secondDep = secondDep;
     }
 
-    e.prototype = {
+    SpriteNoArray.prototype = {
         initialize: function () {
             console.log("NO ARRAY",this.dep);
         }
     };
-    module.exports = e;
+    module.exports = SpriteNoArray;
 });
