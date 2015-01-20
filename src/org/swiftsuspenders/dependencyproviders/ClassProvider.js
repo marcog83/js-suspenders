@@ -7,11 +7,10 @@ define(function (require) {
     }
 
     ClassProvider.prototype = {
-        apply: function (targetType, activeInjector) {
-            return activeInjector.instantiateUnmapped(this._responseType);
+        apply: function (targetType, injector) {
+            return injector.instantiateUnmapped(this._responseType);
         },
-        destroy: function () {
-        }
+        destroy: function () {}
 
     };
     return ClassProvider;

@@ -2,13 +2,8 @@
  * Created by marco on 10/11/2014.
  */
 define(function (require) {
-
 	var InjectionMapping = require("./mapping/InjectionMapping");
-
-
-
-	var TypeDescriptor = require("./utils/TypeDescriptor");
-	var DescribeTypeJSONReflector = require("./reflection/DescribeTypeJSONReflector");
+	var Reflector = require("./reflection/Reflector");
 	var getQualifiedClassName = require("../../core/getQualifiedClassName");
 
 	function getId(type, name) {
@@ -16,26 +11,19 @@ define(function (require) {
 	}
 
 	function Injector() {
-		this._baseTypes = [
-			Object,
-			Array,
-			Function,
-			Boolean,
-			Number,
-			String
-		].map(function (type) {
-				return getQualifiedClassName(type);
-			});
 		this._mappings = {};
 		this._managedObjects = {};
-		this._reflector = new DescribeTypeJSONReflector();
-		this._classDescriptor = new TypeDescriptor(this._reflector, {});
+		//this._reflector = new DescribeTypeJSONReflector();
 		this.providerMappings = {};
-
+		this._descriptionsCache = {};
 	}
 
 	Injector.prototype = {
-		'constructor': Injector,
+		getDescription: function (type) {
+			//get type description or cache it if the given type wasn't encountered before
+			this._descriptionsCache[type] = this._descriptionsCache[type] || Reflector.describeInjections(type);
+			return this._descriptionsCache[type];
+		},
 		map: function (type, name) {
 			//get id
 			// cerca in cache
@@ -76,28 +64,19 @@ define(function (require) {
 		hasManagedInstance: function (instance) {
 			return this._managedObjects[instance];
 		},
-		injectInto: function (target) {
-			console.log("non implementato");
-			//var type = this._reflector.getClass(target);
-			//this.applyInjectionPoints(target, type, this._classDescriptor.getDescription(type));
-		},
 		getInstance: function (type, name, targetType) {
 			var mappingId = getId(type, name);
 			var provider = this.getProvider(mappingId);
 			if (provider) {
-				var ctor = this._classDescriptor.getDescription(type).ctor;
-				return provider.apply(targetType, this, ctor ? ctor.injectParameters : null);
+				return provider.apply(targetType, this);
 			}
 			throw new Error('No mapping found for request ' + mappingId);
-		},
-		getOrCreateNewInstance: function (type) {
-			return this.satisfies(type) && this.getInstance(type) || this.instantiateUnmapped(type);
 		},
 		instantiateUnmapped: function (type) {
 			if (!this.canBeInstantiated(type)) {
 				throw new Error("Can't instantiate interface " + getQualifiedClassName(type));
 			}
-			var description = this._classDescriptor.getDescription(type);
+			var description = this.getDescription(type);
 			//
 			return description.ctor.createInstance(type, this);
 		},
@@ -121,23 +100,12 @@ define(function (require) {
 			this._mappings = {};
 			this._managedObjects = {};
 		},
-
-		addTypeDescription: function (type, description) {
-			this._classDescriptor.addDescription(type, description);
-		},
-		getTypeDescription: function (type) {
-			return this._reflector.describeInjections(type);
-		},
-		hasMapping: function (type, name) {
-			return this.getProvider(getId(type, name)) != null;
-			//return this.getProvider(getQualifiedClassName(type) + '|' + name) != null;
-		},
 		hasDirectMapping: function (type, name) {
 			return this._mappings[getId(type, name)] != null;
 			//return this._mappings[getQualifiedClassName(type) + '|' + name] != null;
 		},
 		canBeInstantiated: function (type) {
-			var description = this._classDescriptor.getDescription(type);
+			var description = this.getDescription(type);
 			return description.ctor != null;
 		},
 		getProvider: function (mappingId) {

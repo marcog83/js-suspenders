@@ -2,9 +2,9 @@
  * Created by marco on 11/11/2014.
  */
 define(function () {
-    function ValueProvider(value, creatingInjector) {
+    function ValueProvider(value, injector) {
         this._value = value;
-        this._creatingInjector = creatingInjector;
+        this.injector = injector;
     }
 
     ValueProvider.prototype = {
@@ -12,10 +12,10 @@ define(function () {
             return this._value;
         },
         destroy: function () {
-            if (this._value && this._creatingInjector && this._creatingInjector.hasManagedInstance(this._value)) {
-                this._creatingInjector.destroyInstance(this._value);
+            if (this._value && this.injector && this.injector.hasManagedInstance(this._value)) {
+                this.injector.destroyInstance(this._value);
             }
-            this._creatingInjector = null;
+            this.injector = null;
             this._value = null;
         }
     };
