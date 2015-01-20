@@ -3,9 +3,7 @@ define(function (require, exports, module) {
 	var _ = require("lodash");
 
 	function ConstructorInjectionPoint(parameters) {
-		this._methodName = 'ctor';
 		this.parameters = parameters;
-		// MethodInjectionPoint.call(this, 'ctor', parameters);
 	}
 
 	ConstructorInjectionPoint.prototype = {

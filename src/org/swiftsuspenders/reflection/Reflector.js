@@ -40,7 +40,6 @@ define(function (require) {
 	return {
 		describeInjections: function (type) {
 			var parameters = getInstanceDescription(type);
-			console.log("describeInjections:", type, parameters);
 			return {
 				ctor: new ConstructorInjectionPoint(parameters)
 			}
