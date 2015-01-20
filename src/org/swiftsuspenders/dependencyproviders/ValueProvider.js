@@ -8,7 +8,7 @@ define(function () {
     }
 
     ValueProvider.prototype = {
-        apply: function (targetType, activeInjector, injectParameters) {
+        apply: function () {
             return this._value;
         },
         destroy: function () {

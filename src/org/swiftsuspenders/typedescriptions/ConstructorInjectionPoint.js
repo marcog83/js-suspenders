@@ -3,9 +3,8 @@ define(function (require, exports, module) {
     var _ = require("lodash");
     var MethodInjectionPoint = require("./MethodInjectionPoint");
 //----------------------               Public Methods               ----------------------//
-    function ConstructorInjectionPoint(parameters, requiredParameters,
-                                       injectParameters) {
-        MethodInjectionPoint.call(this, 'ctor', parameters, requiredParameters, false, injectParameters);
+    function ConstructorInjectionPoint(parameters) {
+        MethodInjectionPoint.call(this, 'ctor', parameters);
     }
 
     ConstructorInjectionPoint.prototype = _.create(MethodInjectionPoint.prototype, {

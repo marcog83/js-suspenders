@@ -18,7 +18,9 @@ require({
     var injector = new Injector();
 
     injector.map(Dep).asSingleton();
+
     injector.map(["Dep", "SecondDep", Sprite],'Sprite');
+
     injector.map(SpriteNoArray,'SpriteNoArray');
 
     injector.map('Value').toValue({

@@ -4,7 +4,7 @@ define(function (require, exports, module) {
     var ConstructorInjectionPoint = require("./ConstructorInjectionPoint");
 
     function NoParamsConstructorInjectionPoint() {
-        ConstructorInjectionPoint.call(this,[], 0, this.injectParameters);
+        ConstructorInjectionPoint.call(this,[]);
     }
 
     NoParamsConstructorInjectionPoint.prototype = _.create(ConstructorInjectionPoint.prototype, {

@@ -12,5 +12,6 @@ define(function (require, exports, module) {
             console.log("Array",this.dep);
         }
     };
+
     module.exports = e;
 });

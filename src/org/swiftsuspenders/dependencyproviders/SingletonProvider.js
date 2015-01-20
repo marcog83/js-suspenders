@@ -13,14 +13,13 @@ define(function (require) {
     }
 
     SingletonProvider.prototype = {
-        apply: function (targetType, activeInjector, injectParameters) {
+        apply: function () {
             this._response = this._response || this.createResponse(this._creatingInjector);
             return this._response;
         },
         createResponse: function (injector) {
             if (this._destroyed) {
-                throw new Error("Forbidden usage of unmapped singleton provider for type "
-                + getQualifiedClassName(this._responseType));
+                throw new Error("Forbidden usage of unmapped singleton provider for type " + getQualifiedClassName(this._responseType));
             }
             return injector.instantiateUnmapped(this._responseType);
         },
