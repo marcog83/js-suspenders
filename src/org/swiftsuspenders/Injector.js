@@ -20,13 +20,16 @@ define(function (require) {
             this._descriptionsCache[type] = Reflector.describeInjections(type);
             return this._descriptionsCache[type];
         }),
-        map: function (type, name) {
+        map: utils.memoize(function (type, name) {
             //get id
             // cerca in cache
             // o crea un nuovo mapping
             var mappingId = utils.getId(type, name);
-            return this._mappings[mappingId] || this.createMapping(type, name, mappingId);
-        },
+            var mapping = new InjectionMapping(this, type, name, mappingId);
+            this._mappings[mappingId] = mapping;
+            return mapping;
+
+        }, utils.getId),
         unmap: function (type, name) {
             var mappingId = utils.getId(type, name);
             var mapping = this._mappings[mappingId];
@@ -102,14 +105,6 @@ define(function (require) {
         },
         getProvider: function (mappingId) {
             return this.providerMappings[mappingId];
-        },
-        createMapping: function (type, name, mappingId) {
-            //crea un nuovo mapping
-            //salvalo in cache
-            //ritornalo
-            var mapping = new InjectionMapping(this, type, name, mappingId);
-            this._mappings[mappingId] = mapping;
-            return mapping;
         }
     };
     return Injector
