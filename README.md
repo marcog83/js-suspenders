@@ -2,7 +2,7 @@ this is a lighweight port of famous AS3 library swiftsuspenders 2.
 
 NB. `js-suspenders-101-porting.zip` file contains the first version I ported. I mean... i just wrote as a monkey copying from AS3 to JS.
 
-*Dependency injection means giving an object its instance variables. Really. That's it.* by James Shore.
+**Dependency injection means giving an object its instance variables. Really. That's it.** by James Shore.
 
 This is also the js-suspenders design goal.
 
