@@ -1,8 +1,4 @@
-require({
-    paths: {
-        lodash: "./lodash"
-    }
-}, ["../src/org/swiftsuspenders/Injector", "./Sprite",  "./SpriteNoArray"], function (Injector, Sprite, SpriteNoArray) {
+require(["../src/org/swiftsuspenders/Injector", "./Sprite", "./SpriteNoArray"], function (Injector, Sprite, SpriteNoArray) {
 
     function Dep() {
         console.log("initialize");
@@ -11,7 +7,7 @@ require({
 
     function ThirdType(value) {
         console.log("ThirdType");
-        this.value=value;
+        this.value = value;
     }
 
 
@@ -19,9 +15,9 @@ require({
 
     injector.map(Dep).asSingleton();
 
-    injector.map(["Dep", "SecondDep", Sprite],'Sprite');
+    injector.map(["Dep", "SecondDep", Sprite], 'Sprite');
 
-    injector.map(SpriteNoArray,'SpriteNoArray');
+    injector.map(SpriteNoArray, 'SpriteNoArray');
 
     injector.map('Value').toValue({
         init: function () {
