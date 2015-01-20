@@ -1,6 +1,7 @@
 this is a port of famous AS3 library swiftsuspenders.
 
 Although it basically works, at the moment this is just a "porting exercise".
+Only constructor injection point is implemented. Code that I could not port is just commented.
 
 ##Defining functions to map
 
