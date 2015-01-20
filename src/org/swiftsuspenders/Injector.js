@@ -47,13 +47,7 @@ define(function (require) {
             return this.hasDirectMapping(type, name);
         },
         getMapping: function (type, name) {
-            var mappingId = utils.getId(type, name);
-            var mapping = this._mappings[mappingId];
-            if (!mapping) {
-                throw new Error('Error while retrieving an injector mapping: '
-                + 'No mapping defined for dependency ' + mappingId);
-            }
-            return mapping;
+            return this._mappings[utils.getId(type, name)];
         },
         hasManagedInstance: function (instance) {
             return this._managedObjects[instance];
@@ -61,18 +55,10 @@ define(function (require) {
         getInstance: function (type, name, targetType) {
             var mappingId = utils.getId(type, name);
             var provider = this.getProvider(mappingId);
-            if (provider) {
-                return provider.apply(targetType, this);
-            }
-            throw new Error('No mapping found for request ' + mappingId);
+            return provider && provider.apply(targetType, this);
         },
         instantiateUnmapped: function (type) {
-            if (!this.canBeInstantiated(type)) {
-                throw new Error("Can't instantiate interface " + type.toString());
-            }
-            var description = this.getDescription(type);
-            //
-            return description.createInstance(type, this);
+            return this.getDescription(type).createInstance(type, this);
         },
         destroyInstance: function (instance) {
             delete this._managedObjects[instance];
@@ -99,10 +85,7 @@ define(function (require) {
             return this._mappings[utils.getId(type, name)] != null;
 
         },
-        canBeInstantiated: function (type) {
-            var description = this.getDescription(type);
-            return description.createInstance != null;
-        },
+
         getProvider: function (mappingId) {
             return this.providerMappings[mappingId];
         }

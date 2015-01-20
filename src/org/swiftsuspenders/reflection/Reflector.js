@@ -42,11 +42,7 @@ define(function (require) {
         createInstance: function (parameters, type, injector) {
             var func = utils.isArray(type) ? type[type.length - 1] : type;
             var args = parameters.map(function (paramId) {
-                var provider = injector.getProvider(paramId);
-                if (!provider) {
-                    throw(new Error('Injector is missing a mapping to handle injection into target: "' + paramId));
-                }
-                return provider.apply(type, injector);
+                return injector.getProvider(paramId).apply(type, injector);
             });
             args.unshift(type);
             //
