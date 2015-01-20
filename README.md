@@ -56,24 +56,24 @@ var injector = new Injector();
 
 You can map in some different ways
 
-directly with function name (minification can breaks funcion names!!!)
+* directly with function name (minification can breaks function names!!!)
 
 ```javascript
 injector.map(Dep).asSingleton(); // asSingleton() allow you to map a function as a Singleton.
 ```
 
-map a function directly with its name, providing a name (string will not break, but dependencies still can)
+* map a function directly with its name, providing a name (string will not break, but dependencies still can)
 
 ```javascript
 injector.map(SpriteNoArray,'SpriteNoArray');
 ```
-map dependencies with an array and a name. (supposed to be safest way to map)
+* map dependencies with an array and a name. (supposed to be safest way to map)
 
 ```javascript
 injector.map(["Dep", "SecondDep", Sprite],"Sprite");
 ```
 
-You can map an Object
+* You can map an Object
 
 ```javascript
 injector.map('Value').toValue({
@@ -83,7 +83,7 @@ injector.map('Value').toValue({
 });
 ```
 
-or you can override a function with another one. Both function must have the same interface
+* or you can override a function with another one. Both function must have the same interface
 
 ```javascript
 injector.map('SecondDep').toType(ThirdType);
