@@ -30,6 +30,7 @@ require([
     });
 
     injector.map('SecondDep').toType(ThirdType);
+    var s=injector.getOrCreateNewInstance(["Dep", "SecondDep", Sprite], 'Sprite')//.toType(ThirdType);
 
 
     var sprite = injector.getInstance('Sprite');

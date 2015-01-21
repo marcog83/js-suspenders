@@ -39,6 +39,11 @@ define(function (require) {
             delete this.providerMappings[mappingId];
             delete this._descriptionsCache[type];
         },
+
+        getOrCreateNewInstance: function (type,name) {
+            //serve a robojs
+            return this.satisfies(type,name) && this.getInstance(type,name) || this.instantiateUnmapped(type);
+        },
         satisfies: function (type, name) {
             var mappingId = utils.getId(type, name);
             return this.getProvider(mappingId, true) != null;
