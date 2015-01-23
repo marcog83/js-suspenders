@@ -1,8 +1,8 @@
 require([
-    "../src/js-suspenders/Injector",
+    "../dist/js-suspenders",
     "./Sprite",
     "./SpriteNoArray"
-], function (Injector, Sprite, SpriteNoArray) {
+], function (jss, Sprite, SpriteNoArray) {
 
     function Dep() {
         console.log("initialize");
@@ -15,7 +15,7 @@ require([
     }
 
 
-    var injector = new Injector();
+    var injector = new jss.Injector();
 
     injector.map(Dep).asSingleton();
 
