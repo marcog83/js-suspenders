@@ -1,5 +1,15 @@
 {
   "name":"js-suspenders",
   "version":"0.0.2",
-  "license": "MIT"
+  "license": "MIT",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "grunt-tasks",
+    "lib",
+    "src",
+    ".gitignore",
+    "Gruntfile.js",
+    "package.json"
+  ]
 }
