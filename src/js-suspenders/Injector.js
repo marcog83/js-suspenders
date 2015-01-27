@@ -8,14 +8,10 @@ define(function (require) {
     var Reflector = require("./reflection/Reflector");
 
 
-    function Injector() {
-
-        this._managedObjects = {};
-        this.providerMappings = {};
-        this._descriptionsCache = {};
-    }
-
-    Injector.prototype = {
+    var Injector = {
+        _managedObjects: {},
+        providerMappings: {},
+        _descriptionsCache: {},
         getDescription: utils.memoize(function (type) {
             //get type description or cache it if the given type wasn't encountered before
             this._descriptionsCache[type] = Reflector.describeInjections(type);
@@ -25,8 +21,8 @@ define(function (require) {
             //get id
             // cerca in cache
             // o crea un nuovo mapping
-            var createMapping = InjectionMapping.create.bind(InjectionMapping,this, type, name);
-            return _.compose(createMapping,utils.getId)(type, name);
+            var createMapping = InjectionMapping.create.bind(InjectionMapping, this, type, name);
+            return _.compose(createMapping, utils.getId)(type, name);
 
         }, utils.getId),
         unmap: function (type, name) {
@@ -39,9 +35,9 @@ define(function (require) {
             delete this._descriptionsCache[type];
         },
 
-        getOrCreateNewInstance: function (type,name) {
+        getOrCreateNewInstance: function (type, name) {
             //serve a robojs
-            return this.satisfies(type,name) && this.getInstance(type,name) || this.instantiateUnmapped(type);
+            return this.satisfies(type, name) && this.getInstance(type, name) || this.instantiateUnmapped(type);
         },
         satisfies: function (type, name) {
             var mappingId = utils.getId(type, name);

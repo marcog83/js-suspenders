@@ -87,43 +87,44 @@
  * Created by marco on 11/11/2014.
  */
 
-	
-	
-	//
-	var InjectionMapping = {
-		create: function (injector, type, name, mappingId) {
-			injector.providerMappings[mappingId] = Provider.create(type, injector.instantiateUnmapped.bind(injector));
-			// set provider
-			var setProvider = _.partial(function (providerMappings, mappingId, provider) {
-				providerMappings[mappingId] = provider;
-			}, injector.providerMappings, mappingId);
-			//create provider & setProvider
-			var toProvider = _.compose(setProvider, Provider.create);
-			// get check provider
-			var hasProvider = _.partial(function (providerMappings, mappingId) {
-				return providerMappings[mappingId];
-			}, injector.providerMappings, mappingId);
-			//
-			return {
-				asSingleton: _.partial(function (type, name, injector, initializeImmediately) {
-					toProvider(type, _.memoize(injector.instantiateUnmapped.bind(injector)));
-					if (initializeImmediately) {
-						injector.getInstance(type, name);
-					}
-				}, type, name, injector),
-				toType: _.partial(function (instantiateUnmapped, type) {
-					toProvider(type, instantiateUnmapped);
-				}, injector.instantiateUnmapped.bind(injector)),
-				toValue: function (value) {
-					toProvider(value, function (e) {return e}.bind(this, value));
-					//return this.toProvider(Provider.create(value, function (e) {return e}.bind(this, value)));
-				},
-				hasProvider: hasProvider,
-				getProvider: hasProvider
-			}
-		}
-	};
-	
+    
+    
+    //
+    var InjectionMapping = {
+        create: function (injector, type, name, mappingId) {
+
+            // set provider
+            var setProvider = _.partial(function (providerMappings, mappingId, provider) {
+                providerMappings[mappingId] = provider;
+            }, injector.providerMappings, mappingId);
+            //create provider & setProvider
+            var toProvider = _.compose(setProvider, Provider.create);
+            // get check provider
+            var hasProvider = _.partial(function (providerMappings, mappingId) {
+                return providerMappings[mappingId];
+            }, injector.providerMappings, mappingId);
+            //
+            toProvider(type, injector.instantiateUnmapped.bind(injector));
+            return {
+
+                asSingleton: _.wrap(_.partial(toProvider, type, _.memoize(injector.instantiateUnmapped.bind(injector))), function (func, yes) {
+                    func();
+                    return yes && injector.getInstance(type, name);
+
+                }),
+
+                toType: _.partialRight(toProvider, injector.instantiateUnmapped.bind(injector)),
+
+                toValue: _.partialRight(toProvider, function (e) {
+                    return e
+                }),
+
+                hasProvider: hasProvider,
+                getProvider: hasProvider
+            }
+        }
+    };
+    
 
 
     
@@ -187,14 +188,10 @@
     
 
 
-    function Injector() {
-
-        this._managedObjects = {};
-        this.providerMappings = {};
-        this._descriptionsCache = {};
-    }
-
-    Injector.prototype = {
+    var Injector = {
+        _managedObjects: {},
+        providerMappings: {},
+        _descriptionsCache: {},
         getDescription: utils.memoize(function (type) {
             //get type description or cache it if the given type wasn't encountered before
             this._descriptionsCache[type] = Reflector.describeInjections(type);
@@ -204,8 +201,8 @@
             //get id
             // cerca in cache
             // o crea un nuovo mapping
-            var createMapping = InjectionMapping.create.bind(InjectionMapping,this, type, name);
-            return _.compose(createMapping,utils.getId)(type, name);
+            var createMapping = InjectionMapping.create.bind(InjectionMapping, this, type, name);
+            return _.compose(createMapping, utils.getId)(type, name);
 
         }, utils.getId),
         unmap: function (type, name) {
@@ -218,9 +215,9 @@
             delete this._descriptionsCache[type];
         },
 
-        getOrCreateNewInstance: function (type,name) {
+        getOrCreateNewInstance: function (type, name) {
             //serve a robojs
-            return this.satisfies(type,name) && this.getInstance(type,name) || this.instantiateUnmapped(type);
+            return this.satisfies(type, name) && this.getInstance(type, name) || this.instantiateUnmapped(type);
         },
         satisfies: function (type, name) {
             var mappingId = utils.getId(type, name);
@@ -268,7 +265,6 @@
             return this.map.cache[utils.getId(type, name)] != null;
 
         },
-
         getProvider: function (mappingId) {
             return this.providerMappings[mappingId];
         }
