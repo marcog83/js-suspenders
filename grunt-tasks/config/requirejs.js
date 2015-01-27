@@ -13,9 +13,9 @@ module.exports = {
             optimizeCss: 'none',
             useStrict: true,
             paths: {
-                signals: "empty:",
+
                 lodash: "empty:",
-                Promise: "empty:",
+
 
 
                 'js-init': '../tmp/js-init'

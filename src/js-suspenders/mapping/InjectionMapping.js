@@ -2,48 +2,41 @@
  * Created by marco on 11/11/2014.
  */
 define(function (require) {
-    var ClassProvider = require("../dependencyproviders/ClassProvider");
-    var SingletonProvider = require("../dependencyproviders/SingletonProvider");
-    var ValueProvider = require("../dependencyproviders/ValueProvider");
-
-    function InjectionMapping(injector, type, name, mappingId) {
-        this.injector = injector;
-        this._type = type;
-        this._name = name;
-        this._mappingId = mappingId;
-
-        //
-        this._mapProvider(new ClassProvider(type));
-    }
-
-    InjectionMapping.prototype = {
-        asSingleton: function (initializeImmediately) {
-            this.toProvider(new SingletonProvider(this._type, this.injector));
-            if (initializeImmediately) {
-                this.injector.getInstance(this._type, this._name);
-            }
-            return this;
-        },
-        toType: function (type) {
-            return this.toProvider(new ClassProvider(type));
-        },
-        toValue: function (value, destroyOnUnmap) {
-            return this.toProvider(new ValueProvider(value, destroyOnUnmap ? this.injector : null));
-        },
-        toProvider: function (provider) {
-            this._mapProvider(provider);
-            return this;
-        },
-        hasProvider: function () {
-            return (this.injector.providerMappings[this._mappingId]);
-        },
-        getProvider: function () {
-            return this.injector.providerMappings[this._mappingId];
-        },
-        //----------------------         Private / Protected Methods        ----------------------//
-        _mapProvider: function (provider) {
-            this.injector.providerMappings[this._mappingId] = provider;
-        }
-    };
-    return InjectionMapping;
+	var Provider = require("../dependencyproviders/Provider");
+	var _ = require("lodash");
+	//
+	var InjectionMapping = {
+		create: function (injector, type, name, mappingId) {
+			injector.providerMappings[mappingId] = Provider.create(type, injector.instantiateUnmapped.bind(injector));
+			// set provider
+			var setProvider = _.partial(function (providerMappings, mappingId, provider) {
+				providerMappings[mappingId] = provider;
+			}, injector.providerMappings, mappingId);
+			//create provider & setProvider
+			var toProvider = _.compose(setProvider, Provider.create);
+			// get check provider
+			var hasProvider = _.partial(function (providerMappings, mappingId) {
+				return providerMappings[mappingId];
+			}, injector.providerMappings, mappingId);
+			//
+			return {
+				asSingleton: _.partial(function (type, name, injector, initializeImmediately) {
+					toProvider(type, _.memoize(injector.instantiateUnmapped.bind(injector)));
+					if (initializeImmediately) {
+						injector.getInstance(type, name);
+					}
+				}, type, name, injector),
+				toType: _.partial(function (instantiateUnmapped, type) {
+					toProvider(type, instantiateUnmapped);
+				}, injector.instantiateUnmapped.bind(injector)),
+				toValue: function (value) {
+					toProvider(value, function (e) {return e}.bind(this, value));
+					//return this.toProvider(Provider.create(value, function (e) {return e}.bind(this, value)));
+				},
+				hasProvider: hasProvider,
+				getProvider: hasProvider
+			}
+		}
+	};
+	return InjectionMapping;
 });

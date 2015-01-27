@@ -1,8 +1,8 @@
 (function (root, factory) {
 	if (typeof define === 'function' && define.amd) {
-		define([], factory);
+		define(["lodash"], factory);
 	} else {
-		root.jss = factory();
+		root.jss = factory(window._);
 	}
-}(this, function () {
+}(this, function (_) {
 	'use strict';

@@ -2,13 +2,14 @@
  * Created by marco on 10/11/2014.
  */
 define(function (require) {
+    var _ = require("lodash");
     var utils = require("./utils");
     var InjectionMapping = require("./mapping/InjectionMapping");
     var Reflector = require("./reflection/Reflector");
 
 
     function Injector() {
-        this._mappings = {};
+
         this._managedObjects = {};
         this.providerMappings = {};
         this._descriptionsCache = {};
@@ -24,18 +25,16 @@ define(function (require) {
             //get id
             // cerca in cache
             // o crea un nuovo mapping
-            var mappingId = utils.getId(type, name);
-            var mapping = new InjectionMapping(this, type, name, mappingId);
-            this._mappings[mappingId] = mapping;
-            return mapping;
+            var createMapping = InjectionMapping.create.bind(InjectionMapping,this, type, name);
+            return _.compose(createMapping,utils.getId)(type, name);
 
         }, utils.getId),
         unmap: function (type, name) {
             var mappingId = utils.getId(type, name);
-            var mapping = this._mappings[mappingId];
+            var mapping = this.map.cache[mappingId];
 
             mapping && mapping.getProvider().destroy();
-            delete this._mappings[mappingId];
+            delete this.map.cache[mappingId];
             delete this.providerMappings[mappingId];
             delete this._descriptionsCache[type];
         },
@@ -52,15 +51,15 @@ define(function (require) {
             return this.hasDirectMapping(type, name);
         },
         getMapping: function (type, name) {
-            return this._mappings[utils.getId(type, name)];
+            return this.map.cache[utils.getId(type, name)];
         },
         hasManagedInstance: function (instance) {
             return this._managedObjects[instance];
         },
-        getInstance: function (type, name, targetType) {
+        getInstance: function (type, name) {
             var mappingId = utils.getId(type, name);
             var provider = this.getProvider(mappingId);
-            return provider && provider.apply(targetType, this);
+            return provider && provider.apply(type, this);
         },
         instantiateUnmapped: function (type) {
             return this.getDescription(type).createInstance(type, this);
@@ -69,7 +68,7 @@ define(function (require) {
             delete this._managedObjects[instance];
         },
         teardown: function () {
-            this._mappings.forEach(function (mapping) {
+            this.map.cache.forEach(function (mapping) {
                 mapping.getProvider().destroy();
             });
             var objectsToRemove = [];
@@ -82,15 +81,14 @@ define(function (require) {
             this.providerMappings.forEach(function (mappingId) {
                 delete this.providerMappings[mappingId];
             });
-            this._mappings = {};
+            this.map.cache = {};
             this._managedObjects = {};
             this._descriptionsCache = {};
         },
         hasDirectMapping: function (type, name) {
-            return this._mappings[utils.getId(type, name)] != null;
+            return this.map.cache[utils.getId(type, name)] != null;
 
         },
-
         getProvider: function (mappingId) {
             return this.providerMappings[mappingId];
         }

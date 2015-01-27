@@ -1,10 +1,10 @@
 (function (root, factory) {
 	if (typeof define === 'function' && define.amd) {
-		define([], factory);
+		define(["lodash"], factory);
 	} else {
-		root.jss = factory();
+		root.jss = factory(window._);
 	}
-}(this, function () {
+}(this, function (_) {
 	'use strict';
 
     var JSSuspenders = {};
@@ -61,125 +61,69 @@
 
     
 /**
- * Created by marco on 11/11/2014.
+ * Created by marco.gobbi on 27/01/2015.
  */
 
-    function ClassProvider(responseType) {
-        this._responseType = responseType;
-    }
-
-    ClassProvider.prototype = {
-        apply: function (targetType, injector) {
-            return injector.instantiateUnmapped(this._responseType);
-        },
-        destroy: function () {}
-
-    };
-    
+	"use strict";
+	var Provider = {
+		create: function (responseType, instantiateUnmapped) {
+			return {
+				apply: function (responseType, instantiateUnmapped) {
+					return instantiateUnmapped(responseType);
+				}.bind(this, responseType, instantiateUnmapped),
+				//
+				destroy: function (responseType, injector) {
+					if (responseType && injector && injector.hasManagedInstance(responseType)) {
+						injector.destroyInstance(responseType);
+					}
+					//this.injector = null;
+					//this._value = null;
+				}.bind(this, responseType)
+			}
+		}
+	};
+	
 /**
  * Created by marco on 11/11/2014.
  */
 
-
-
-    function SingletonProvider(responseType, injector) {
-        this._response = null;
-        this._destroyed = false;
-        this._responseType = responseType;
-        this.injector = injector;
-    }
-
-    SingletonProvider.prototype = {
-        apply: function () {
-            this._response = this._response || this.createResponse(this.injector);
-            return this._response;
-        },
-        createResponse: function (injector) {
-            if (this._destroyed) {
-                throw new Error("Forbidden usage of unmapped singleton provider for type " + this._responseType.toString());
-            }
-            return injector.instantiateUnmapped(this._responseType);
-        },
-        destroy: function () {
-            this._destroyed = true;
-            if (this._response && this.injector && this.injector.hasManagedInstance(this._response)) {
-                this.injector.destroyInstance(this._response);
-            }
-            this.injector = null;
-            this._response = null;
-        }
-    };
-    
-/**
- * Created by marco on 11/11/2014.
- */
-
-    function ValueProvider(value, injector) {
-        this._value = value;
-        this.injector = injector;
-    }
-
-    ValueProvider.prototype = {
-        apply: function () {
-            return this._value;
-        },
-        destroy: function () {
-            if (this._value && this.injector && this.injector.hasManagedInstance(this._value)) {
-                this.injector.destroyInstance(this._value);
-            }
-            this.injector = null;
-            this._value = null;
-        }
-    };
-    
-/**
- * Created by marco on 11/11/2014.
- */
-
-    
-    
-    
-
-    function InjectionMapping(injector, type, name, mappingId) {
-        this.injector = injector;
-        this._type = type;
-        this._name = name;
-        this._mappingId = mappingId;
-
-        //
-        this._mapProvider(new ClassProvider(type));
-    }
-
-    InjectionMapping.prototype = {
-        asSingleton: function (initializeImmediately) {
-            this.toProvider(new SingletonProvider(this._type, this.injector));
-            if (initializeImmediately) {
-                this.injector.getInstance(this._type, this._name);
-            }
-            return this;
-        },
-        toType: function (type) {
-            return this.toProvider(new ClassProvider(type));
-        },
-        toValue: function (value, destroyOnUnmap) {
-            return this.toProvider(new ValueProvider(value, destroyOnUnmap ? this.injector : null));
-        },
-        toProvider: function (provider) {
-            this._mapProvider(provider);
-            return this;
-        },
-        hasProvider: function () {
-            return (this.injector.providerMappings[this._mappingId]);
-        },
-        getProvider: function () {
-            return this.injector.providerMappings[this._mappingId];
-        },
-        //----------------------         Private / Protected Methods        ----------------------//
-        _mapProvider: function (provider) {
-            this.injector.providerMappings[this._mappingId] = provider;
-        }
-    };
-    
+	
+	
+	//
+	var InjectionMapping = {
+		create: function (injector, type, name, mappingId) {
+			injector.providerMappings[mappingId] = Provider.create(type, injector.instantiateUnmapped.bind(injector));
+			// set provider
+			var setProvider = _.partial(function (providerMappings, mappingId, provider) {
+				providerMappings[mappingId] = provider;
+			}, injector.providerMappings, mappingId);
+			//create provider & setProvider
+			var toProvider = _.compose(setProvider, Provider.create);
+			// get check provider
+			var hasProvider = _.partial(function (providerMappings, mappingId) {
+				return providerMappings[mappingId];
+			}, injector.providerMappings, mappingId);
+			//
+			return {
+				asSingleton: _.partial(function (type, name, injector, initializeImmediately) {
+					toProvider(type, _.memoize(injector.instantiateUnmapped.bind(injector)));
+					if (initializeImmediately) {
+						injector.getInstance(type, name);
+					}
+				}, type, name, injector),
+				toType: _.partial(function (instantiateUnmapped, type) {
+					toProvider(type, instantiateUnmapped);
+				}, injector.instantiateUnmapped.bind(injector)),
+				toValue: function (value) {
+					toProvider(value, function (e) {return e}.bind(this, value));
+					//return this.toProvider(Provider.create(value, function (e) {return e}.bind(this, value)));
+				},
+				hasProvider: hasProvider,
+				getProvider: hasProvider
+			}
+		}
+	};
+	
 
 
     
@@ -240,10 +184,11 @@
     
     
     
+    
 
 
     function Injector() {
-        this._mappings = {};
+
         this._managedObjects = {};
         this.providerMappings = {};
         this._descriptionsCache = {};
@@ -259,18 +204,16 @@
             //get id
             // cerca in cache
             // o crea un nuovo mapping
-            var mappingId = utils.getId(type, name);
-            var mapping = new InjectionMapping(this, type, name, mappingId);
-            this._mappings[mappingId] = mapping;
-            return mapping;
+            var createMapping = InjectionMapping.create.bind(InjectionMapping,this, type, name);
+            return _.compose(createMapping,utils.getId)(type, name);
 
         }, utils.getId),
         unmap: function (type, name) {
             var mappingId = utils.getId(type, name);
-            var mapping = this._mappings[mappingId];
+            var mapping = this.map.cache[mappingId];
 
             mapping && mapping.getProvider().destroy();
-            delete this._mappings[mappingId];
+            delete this.map.cache[mappingId];
             delete this.providerMappings[mappingId];
             delete this._descriptionsCache[type];
         },
@@ -287,15 +230,15 @@
             return this.hasDirectMapping(type, name);
         },
         getMapping: function (type, name) {
-            return this._mappings[utils.getId(type, name)];
+            return this.map.cache[utils.getId(type, name)];
         },
         hasManagedInstance: function (instance) {
             return this._managedObjects[instance];
         },
-        getInstance: function (type, name, targetType) {
+        getInstance: function (type, name) {
             var mappingId = utils.getId(type, name);
             var provider = this.getProvider(mappingId);
-            return provider && provider.apply(targetType, this);
+            return provider && provider.apply(type, this);
         },
         instantiateUnmapped: function (type) {
             return this.getDescription(type).createInstance(type, this);
@@ -304,7 +247,7 @@
             delete this._managedObjects[instance];
         },
         teardown: function () {
-            this._mappings.forEach(function (mapping) {
+            this.map.cache.forEach(function (mapping) {
                 mapping.getProvider().destroy();
             });
             var objectsToRemove = [];
@@ -317,12 +260,12 @@
             this.providerMappings.forEach(function (mappingId) {
                 delete this.providerMappings[mappingId];
             });
-            this._mappings = {};
+            this.map.cache = {};
             this._managedObjects = {};
             this._descriptionsCache = {};
         },
         hasDirectMapping: function (type, name) {
-            return this._mappings[utils.getId(type, name)] != null;
+            return this.map.cache[utils.getId(type, name)] != null;
 
         },
 

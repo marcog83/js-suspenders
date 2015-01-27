@@ -1,6 +1,6 @@
 {
-  "name":"js-suspenders",
-  "version":"0.0.2",
+  "name": "js-suspenders",
+  "version": "0.0.2",
   "license": "MIT",
   "ignore": [
     "node_modules",
@@ -11,5 +11,8 @@
     ".gitignore",
     "Gruntfile.js",
     "package.json"
-  ]
+  ],
+  "dependencies": {
+    "lodash": "~3.0.0"
+  }
 }

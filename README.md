@@ -121,5 +121,6 @@ var sprite = injector.getInstance('Sprite');
 var sprite2 = injector.getInstance(SpriteNoArray);
 ```
 
-
+###Dependencies
+I added [lodash](https://lodash.com/) dependency trying to make js-suspenders more functional oriented.
 
